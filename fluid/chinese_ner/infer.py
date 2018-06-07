@@ -22,13 +22,14 @@ def infer(model_path, batch_size, test_data_file, target_file):
     test_data = paddle.batch(
         reader.file_reader(test_data_file), batch_size=batch_size)
     place = fluid.CPUPlace()
-    feeder = fluid.DataFeeder(feed_list=[word, mention, target], place=place)
+    feeder = fluid.DataFeeder(feed_list=[word, mention], place=place)
     exe = fluid.Executor(place)
 
     inference_scope = fluid.core.Scope()
     with fluid.scope_guard(inference_scope):
         [inference_program, feed_target_names,
          fetch_targets] = fluid.io.load_inference_model(model_path, exe)
+        print_res = ""
         for data in test_data():
             crf_decode = exe.run(inference_program,
                                  feed=feeder.feed(data),
@@ -44,17 +45,18 @@ def infer(model_path, batch_size, test_data_file, target_file):
                 for tag_index in xrange(lod_info[sen_index],
                                         lod_info[sen_index + 1]):
                     word = str(data[sen_index][0][word_index])
-                    gold_tag = label_reverse_dict[data[sen_index][2][
-                        word_index]]
-                    tag = label_reverse_dict[np_data[tag_index][0]]
-                    print word + "\t" + gold_tag + "\t" + tag
+                    #gold_tag = label_reverse_dict[data[sen_index][2][
+                    #    word_index]]
+                    #tag = label_reverse_dict[np_data[tag_index][0]]
+                    print_res += str(np_data[tag_index][0]) +" "
                     word_index += 1
-                print ""
+            print_res +="\n"
 
-
+        print print_res
 if __name__ == "__main__":
     infer(
-        model_path="output/params_pass_0",
+        model_path="/home/public/chinese_ner/params_pass_0",
+        #model_path="model/params_batch_450000",
         batch_size=6,
         test_data_file="data/test_files",
         target_file="data/label_dict")

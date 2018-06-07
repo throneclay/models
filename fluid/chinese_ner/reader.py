@@ -22,6 +22,6 @@ def file_reader(file_dir):
                 mention_idx = []
                 for item in features[3].strip().split(" "):
                     mention_idx.append(int(item))
-                yield word_idx, mention_idx, target_idx,
+                yield word_idx, mention_idx,
 
     return reader
